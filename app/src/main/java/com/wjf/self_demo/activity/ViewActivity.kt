@@ -1,12 +1,16 @@
 package com.wjf.self_demo.activity
 
 import android.animation.ObjectAnimator
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.shape.MaterialShapeDrawable
@@ -24,19 +28,43 @@ import org.jxxy.debug.corekit.common.BaseActivity
 import org.jxxy.debug.corekit.recyclerview.SingleTypeAdapter
 import org.jxxy.debug.corekit.recyclerview.SlideBarItemDecoration
 import org.jxxy.debug.corekit.recyclerview.ViewHolderTag
-import org.jxxy.debug.corekit.util.*
+import org.jxxy.debug.corekit.util.ResourceUtil
+import org.jxxy.debug.corekit.util.dp
+import org.jxxy.debug.corekit.util.load
+import org.jxxy.debug.corekit.util.singleClick
+import org.jxxy.debug.corekit.util.startActivity
+import org.jxxy.debug.corekit.util.toast
 
 /** @author Wangjf2-DESKTOP
  */
 class ViewActivity : BaseActivity<ActivityViewBinding>() {
     override fun initView() {
+        val systemService = getSystemService(Context.LOCATION_SERVICE)
+
         EncodingUtils.bindBarCode("sadad", view.barcode)
         val dialog = AnchorDialog()
         val drawable by lazy {
-            val drawable = MaterialShapeDrawable(ShapeAppearanceModel.Builder().setAllCorners(RoundedCornerTreatment()).setAllCornerSizes(9.dp<Float>()).setBottomEdge(TriangleBottomEdgeTreatment(18f.dp(), 8f.dp(), 88f.dp(), 9.dp())).build())
+            val drawable = MaterialShapeDrawable(
+                ShapeAppearanceModel.Builder().setAllCorners(RoundedCornerTreatment())
+                    .setAllCornerSizes(9.dp<Float>())
+                    .setBottomEdge(TriangleBottomEdgeTreatment(18f.dp(), 8f.dp(), 88f.dp(), 9.dp()))
+                    .build(),
+            )
             drawable.setTint(ResourceUtil.getColor(R.color.color_yellow))
             drawable
         }
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            object : BroadcastReceiver() {
+                override fun onReceive(p0: Context?, p1: Intent?) {
+                    toast("收到广播")
+                }
+            },
+            IntentFilter("ceshi"),
+        )
+        val intent = Intent().apply {
+            action = "ceshi"
+        }
+        sendBroadcast(intent)
         view.icon2.background = drawable
         view.icon1.singleClick {
             startActivity<IndexActivity>()
@@ -83,6 +111,17 @@ class ViewActivity : BaseActivity<ActivityViewBinding>() {
             }
             status = !status
         }
+        // 内存泄露分析
+        /*Handler(Looper.myLooper()!!).postDelayed({
+            Log.w("wjftc", "get:$view")
+            thread {
+                var i = 0
+                while (true) {
+                    Log.w("wjftc", "${i++} --- $view")
+                    Thread.sleep(2000L)
+                }
+            }
+        }, 8000L)*/
 //        view.marqueeView.start()
         /*view.marqueeView.postDelayed(5000L) {
             view.marqueeView.pause()
@@ -92,10 +131,12 @@ class ViewActivity : BaseActivity<ActivityViewBinding>() {
         }*/
         val adapter = RvAdapter()
         view.recyclerView.adapter = adapter
-        view.recyclerView.layoutManager = GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)
+        view.recyclerView.layoutManager =
+            GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)
         view.recyclerView.addItemDecoration(SlideBarItemDecoration())
         val dataList = mutableListOf<RvEntity>()
-        val img = "https://www.baidu.com/link?url=vh3wwOz4jhqsv2b_yeCoDna9DNuugvTU_PxS31JdLg1tS46STnxg8DPPcTDz9PU7x18WWf9891wCZE9YoT5xjPfD-E8J4cdH8G6S1diwnzCfrYG6ICtj17vELRZ7ppKN&wd=&eqid=ad0c362a0000779b0000000664ccecdf"
+        val img =
+            "https://www.baidu.com/link?url=vh3wwOz4jhqsv2b_yeCoDna9DNuugvTU_PxS31JdLg1tS46STnxg8DPPcTDz9PU7x18WWf9891wCZE9YoT5xjPfD-E8J4cdH8G6S1diwnzCfrYG6ICtj17vELRZ7ppKN&wd=&eqid=ad0c362a0000779b0000000664ccecdf"
         repeat(5) {
             dataList.add(RvEntity(img, "淘宝好运"))
             dataList.add(RvEntity(img, "百亿补贴"))
@@ -155,12 +196,18 @@ class ViewActivity : BaseActivity<ActivityViewBinding>() {
     class RvEntity(val imgUrl: String, val name: String)
 
     class RvAdapter : SingleTypeAdapter<RvEntity>() {
-        override fun createViewHolder(viewType: Int, inflater: LayoutInflater, parent: ViewGroup): RecyclerView.ViewHolder? {
+        override fun createViewHolder(
+            viewType: Int,
+            inflater: LayoutInflater,
+            parent: ViewGroup,
+        ): RecyclerView.ViewHolder? {
             return RvViewHolder(ItemRvBinding.inflate(inflater, parent, false))
         }
     }
 
-    class RvViewHolder(private val view: ItemRvBinding) : RecyclerView.ViewHolder(view.root), ViewHolderTag<RvEntity> {
+    class RvViewHolder(private val view: ItemRvBinding) :
+        RecyclerView.ViewHolder(view.root),
+        ViewHolderTag<RvEntity> {
         override fun setHolder(entity: RvEntity) {
             view.nameTv.text = entity.name
             view.img.load(entity.imgUrl, true)

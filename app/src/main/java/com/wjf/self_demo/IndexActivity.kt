@@ -14,6 +14,8 @@ import com.wjf.self_demo.adapter.IndexListAdapter
 import com.wjf.self_demo.databinding.ActivityIndexBinding
 import com.wjf.self_demo.databinding.ItemListIndexBinding
 import com.wjf.self_demo.entity.IndexListMenu
+import com.wjf.self_demo.util.FinishListener
+import com.wjf.self_demo.util.JacocoInstrumentation
 import org.jxxy.debug.barcode.CaptureActivity
 import org.jxxy.debug.corekit.common.BaseActivity
 import org.jxxy.debug.corekit.recyclerview.GridSpacingItemDecoration
@@ -31,7 +33,7 @@ class IndexActivity : BaseActivity<ActivityIndexBinding>(), Window.OnFrameMetric
         adapter = IndexListAdapter()
         view.recyclerView.layoutManager = GridLayoutManager(this, 5)
 //        view.recyclerView.addItemDecoration(SpanItemDecoration(20f, 15f, 5))
-        view.recyclerView.addItemDecoration(GridSpacingItemDecoration(5,15f.dp(),10f.dp(),true))
+        view.recyclerView.addItemDecoration(GridSpacingItemDecoration(5, 15f.dp(), 10f.dp(), true))
         view.recyclerView.adapter = adapter
     }
 
@@ -64,8 +66,12 @@ class IndexActivity : BaseActivity<ActivityIndexBinding>(), Window.OnFrameMetric
             view.recyclerView.recycledViewPool.setMaxRecycledViews(1, 20)
             repeat(20) {
 //                Log.d("wjftc", "布局解析$it")
-                MyAsyncLayoutInflater(this@IndexActivity).inflate(R.layout.item_list_index, view.recyclerView) { view, resid, parent ->
-                    val holder = IndexListAdapter.IndexListViewHolder(ItemListIndexBinding.bind(view))
+                MyAsyncLayoutInflater(this@IndexActivity).inflate(
+                    R.layout.item_list_index,
+                    view.recyclerView,
+                ) { view, resid, parent ->
+                    val holder =
+                        IndexListAdapter.IndexListViewHolder(ItemListIndexBinding.bind(view))
                     holder.bindItemViewType(1)
                     this@IndexActivity.view.recyclerView.recycledViewPool.putRecycledView(holder)
 //                    Log.d("wjftc", "布局解析好了$it")
@@ -74,6 +80,9 @@ class IndexActivity : BaseActivity<ActivityIndexBinding>(), Window.OnFrameMetric
         }
 
         adapter?.add(data)
+        val l = JacocoInstrumentation()
+        finishListener = l
+        l.onCreate(this)
         /*lifecycleScope.launch(
             Dispatchers.Default + CoroutineExceptionHandler { _, e ->
                 Log.e("wjftc", "出错了", e)
@@ -123,6 +132,7 @@ class IndexActivity : BaseActivity<ActivityIndexBinding>(), Window.OnFrameMetric
     override fun onPause() {
         super.onPause()
         println("ActivityA - onPause")
+//        finishListener?.onActivityFinished()
     }
 
     override fun onStop() {
@@ -130,9 +140,13 @@ class IndexActivity : BaseActivity<ActivityIndexBinding>(), Window.OnFrameMetric
         println("ActivityA - onStop")
     }
 
+    var finishListener: FinishListener? = null
+
     override fun onDestroy() {
         super.onDestroy()
         println("ActivityA - onDestroy")
+        finishListener?.onActivityFinished()
+        super.onDestroy()
     }
 
     override fun onStart() {
@@ -155,9 +169,26 @@ class IndexActivity : BaseActivity<ActivityIndexBinding>(), Window.OnFrameMetric
         println("ActivityA - onNewIntent")
     }
 
-    override fun onFrameMetricsAvailable(window: Window?, frameMetrics: FrameMetrics?, dropCountSinceLastInvocation: Int) {
+    override fun onFrameMetricsAvailable(
+        window: Window?,
+        frameMetrics: FrameMetrics?,
+        dropCountSinceLastInvocation: Int,
+    ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Log.i("wjftc", "主线程 ${(frameMetrics?.getMetric(FrameMetrics.UNKNOWN_DELAY_DURATION) ?: 0) / 1000000.0f} ms\n" + "帧耗时 ${(frameMetrics?.getMetric(FrameMetrics.TOTAL_DURATION) ?: 0) / 1000000.0f} ms\n" + "绘制耗时 ${((frameMetrics?.getMetric(FrameMetrics.LAYOUT_MEASURE_DURATION) ?: 0) + (frameMetrics?.getMetric(FrameMetrics.DRAW_DURATION) ?: 0)) / 1000000.0f} ms")
+            Log.i(
+                "wjftc",
+                "主线程 ${(frameMetrics?.getMetric(FrameMetrics.UNKNOWN_DELAY_DURATION) ?: 0) / 1000000.0f} ms\n" + "帧耗时 ${
+                    (frameMetrics?.getMetric(FrameMetrics.TOTAL_DURATION) ?: 0) / 1000000.0f
+                } ms\n" + "绘制耗时 ${
+                    (
+                        (frameMetrics?.getMetric(FrameMetrics.LAYOUT_MEASURE_DURATION) ?: 0) + (
+                            frameMetrics?.getMetric(
+                                FrameMetrics.DRAW_DURATION,
+                            ) ?: 0
+                            )
+                        ) / 1000000.0f
+                } ms",
+            )
         }
     }
 }

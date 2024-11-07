@@ -27,6 +27,7 @@ class BehaviorActivity : BaseActivity<ActivityBehaviorBinding>() {
     }
 
     override fun initView() {
+
         /*view.btn.singleClick {
             Snackbar.make(it, "我去，好神奇啊，我出来了", Snackbar.LENGTH_LONG).setAction("Action", null).show()
         }*/

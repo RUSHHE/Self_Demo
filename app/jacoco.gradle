@@ -1,0 +1,86 @@
+apply plugin: 'jacoco'
+jacoco {
+    toolVersion = "0.8.2"
+}
+android {
+    buildTypes {
+        debug {
+            testCoverageEnabled = true
+        }
+    }
+}
+// 源码路径是在运行module目录下的，需要注意层级
+def coverageSourceDirs = [
+        'src/main/java',
+        '../corekit/src/main/java'
+]
+
+// class文件会拼接项目路径
+def coverageClassDirs = [
+        '/app/build/intermediates/javac/debug/classes',
+        '/corekit/build/intermediates/javac/debug/classes'
+]
+
+//kotlin的classes文件
+def kotlinClassDirs = [
+        '/app/build/tmp/kotlin-classes/debug/',
+        '/corekit/build/tmp/kotlin-classes/debug/'
+]
+
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
+}
+
+//这个就是具体解析ec文件的任务，会根据我们指定的class路径、源码路径、ec路径进行解析输出
+task jacocoTestReport(type: JacocoReport) {
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports after running tests."
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+    classDirectories.from = files(coverageClassDirs.collect{
+        fileTree(
+                dir: "$rootDir"+it,
+                excludes: ['**/R*.class',
+                           '**/*$InjectAdapter.class',
+                           '**/*$ModuleAdapter.class',
+                           '**/*$ViewInjector*.class'])})
+
+    classDirectories.from = files(kotlinClassDirs.collect{
+        fileTree(
+                dir: "$rootDir"+it,
+                excludes: ['**/R*.class',
+                           '**/*$InjectAdapter.class',
+                           '**/*$ModuleAdapter.class',
+                           '**/*$ViewInjector*.class'
+                ])})
+    sourceDirectories.from =  files(coverageSourceDirs)
+    sourceDirectories.each { path ->
+        println("源码路径："+path)
+    }
+
+    executionData.from =  files("/Users/wjf/Desktop/临时文件夹/coverage.ec")
+
+    doFirst {
+        //遍历class路径下的所有文件，替换字符
+        coverageClassDirs.each { path ->
+            println("$rootDir"+path)
+            new File("$rootDir"+path).eachFileRecurse { file ->
+                if (file.name.contains('$$')) {
+                    file.renameTo(file.path.replace('$$', '$'))
+                }
+            }
+        }
+    }
+}
+
+task jacocoInit() {
+    group = "JacocoReport"
+    doFirst {
+        File file = new File("$buildDir/outputs/code-coverage/")
+        if (!file.exists()) {
+            file.mkdir();
+        }
+    }
+}

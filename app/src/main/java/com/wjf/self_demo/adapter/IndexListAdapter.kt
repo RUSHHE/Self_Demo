@@ -1,5 +1,6 @@
 package com.wjf.self_demo.adapter
 
+import android.app.Activity
 import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
@@ -27,6 +28,7 @@ class IndexListAdapter : SingleTypeAdapter<IndexListMenu>() {
                 val intent = Intent()
                 intent.putExtra("data", entity.data)
                 intent.setClass(context, entity.gotoClass)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(intent)
             }
             Log.d("wjftc", "onBindViewHolder: ${System.currentTimeMillis() - start} ms")

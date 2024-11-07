@@ -4,6 +4,9 @@
     package="com.wjf.self_demo">
 
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.modify_phone_state" />
     <uses-permission android:name="android.permission.RECEIVE_USER_PRESENT" />
@@ -41,6 +44,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION"/>
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
@@ -56,7 +60,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".activity.FragmentTestActivity"/>
-        <activity android:name=".activity.BehaviorActivity"/>
+        <activity android:name=".activity.BehaviorActivity"
+            android:taskAffinity="com.wjf.self_demo.NewAffinity"/>
         <activity
             android:name=".activity.EventDispatchActivity"
             android:exported="false" />
@@ -80,5 +85,9 @@
         </activity>
         <activity android:name=".activity.MainActivity" />
     </application>
-
+<!--    <instrumentation-->
+<!--        android:name=".util.JacocoInstrumentation"-->
+<!--        android:handleProfiling="true"-->
+<!--        android:label="CoverageInstrumentation"-->
+<!--        android:targetPackage="com.wjf.self_demo" />-->
 </manifest>

@@ -33,6 +33,7 @@ class MyApp : BaseApplication() {
     override fun onCreate() {
         super.onCreate()
         BeepManager.init(this, SP_TAG)
+//        LeakCanary.install(this)
 //        IconFontManager.initAsset("iconfont.ttf")
         //        BlockCanary.install(this, new AppBlockCanaryContext()).start();
 //        mBlockThread.start()

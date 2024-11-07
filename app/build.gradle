@@ -5,6 +5,17 @@ plugins {
 //    id 'com.wjf.selfPlugin.HelloGradlePlugin'
     id 'hhh'
 }
+
+apply from: './jacoco.gradle'
+project.afterEvaluate {
+    android.applicationVariants.all { variant ->
+        def variantName = variant.name
+        def testTaskName = "test${variantName.capitalize()}UnitTest"
+        tasks.create(name: "${testTaskName}Coverage", type: JacocoReport, dependsOn: "$testTaskName") {
+            // TODO 后面实现
+        }
+    }
+}
 /*wjf {
     enable = false
     extension {
@@ -39,7 +50,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            applicationIdSuffix ".debug"
+            testCoverageEnabled = true
+//            applicationIdSuffix ".debug"
         }
     }
 
@@ -97,6 +109,7 @@ dependencies {
     implementation group: "com.tencent.matrix", name: "matrix-android-commons", version: MATRIX_VERSION
     implementation group: "com.tencent.matrix", name: "matrix-trace-canary", version: MATRIX_VERSION*/
     implementation 'com.github.markzhai:blockcanary-android:1.5.0'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
 
     implementation("io.coil-kt:coil:2.2.2")
     implementation("io.coil-kt:coil-gif:2.2.2")
