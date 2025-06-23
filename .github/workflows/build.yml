@@ -1,4 +1,4 @@
-name: Build Android Library (JAR)
+name: Build Android Library
 
 on:
   workflow_dispatch:
@@ -16,16 +16,19 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
-        java-version: 11
+        java-version: 11  # 推荐使用 JDK 17 兼容 AGP 7.0+
 
     - name: Setup Gradle cache
       uses: gradle/gradle-build-action@v2
 
-    - name: Build JAR
-      run: ./gradlew :corekit:makeJar
+    - name: Refresh Dependencies
+      run: ./gradlew :corekit:dependencies --refresh-dependencies
 
-    - name: Upload JAR
+    - name: Build AAR
+      run: ./gradlew :corekit:assembleRelease
+
+    - name: Upload AAR
       uses: actions/upload-artifact@v4
       with:
-        name: corekit-jar
-        path: corekit/build/libs/*.jar
+        name: corekit-aar
+        path: corekit/build/outputs/aar/*.aar
